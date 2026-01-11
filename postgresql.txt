@@ -1,0 +1,142 @@
+Server [localhost]:
+Database [postgres]:
+Port [5432]:
+Username [postgres]:
+Password for user postgres:
+
+psql (17.5)
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+Type "help" for help.
+
+postgres=# CREATE DATABASE authdb;
+CREATE DATABASE
+postgres=# \c authdb;
+You are now connected to database "authdb" as user "postgres".
+authdb=# \l
+                                                            List of databases
+   Name    |  Owner   | Encoding | Locale Provider |      Collate       |       Ctype        | Locale | ICU Rules |   Access privileges
+-----------+----------+----------+-----------------+--------------------+--------------------+--------+-----------+-----------------------
+ ajdb21    | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ authdb    | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ bank      | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ college   | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ mydb      | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ postgres  | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ student   | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ studentdb | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ tcadb16   | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+ template0 | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           | =c/postgres          +
+           |          |          |                 |                    |                    |        |           | postgres=CTc/postgres
+ template1 | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           | =c/postgres          +
+           |          |          |                 |                    |                    |        |           | postgres=CTc/postgres
+ viewtable | postgres | UTF8     | libc            | English_India.1252 | English_India.1252 |        |           |
+(12 rows)
+
+
+authdb=# CREATE TABLE users (
+authdb(#     id SERIAL PRIMARY KEY,
+authdb(#     username VARCHAR(50) UNIQUE NOT NULL,
+authdb(#     password_hash VARCHAR(256) NOT NULL,
+authdb(#     role VARCHAR(20) NOT NULL,
+authdb(#     failed_attempts INT DEFAULT 0,
+authdb(#     account_locked BOOLEAN DEFAULT FALSE
+authdb(# );
+CREATE TABLE
+authdb=# INSERT INTO users (username, password_hash, role)
+authdb-# VALUES ('admin',
+authdb(# '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+authdb(# 'ADMIN');
+INSERT 0 1
+authdb=# select * from users
+authdb-# ;
+ id | username |                          password_hash                           | role  | failed_attempts | account_locked
+----+----------+------------------------------------------------------------------+-------+-----------------+----------------
+  1 | admin    | 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9 | ADMIN |               0 | f
+(1 row)
+
+
+authdb=# select * from users;
+ id | username |                          password_hash                           | role  | failed_attempts | account_locked
+----+----------+------------------------------------------------------------------+-------+-----------------+----------------
+  1 | admin    | 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9 | ADMIN |               0 | f
+(1 row)
+
+
+authdb=# UPDATE users
+authdb-# SET failed_attempts = 0,
+authdb-#     account_locked = false
+authdb-# WHERE username = 'admin';
+UPDATE 1
+authdb=# select * from users;
+ id | username |                          password_hash                           | role  | failed_attempts | account_locked
+----+----------+------------------------------------------------------------------+-------+-----------------+----------------
+  1 | admin    | 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9 | ADMIN |               0 | f
+(1 row)
+
+
+authdb=# INSERT INTO users (username, password_hash, role)
+authdb-# VALUES (
+authdb(#   'admin',
+authdb(#   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+authdb(#   'ADMIN'
+authdb(# );
+ERROR:  duplicate key value violates unique constraint "users_username_key"
+DETAIL:  Key (username)=(admin) already exists.
+authdb=# delete from users;
+DELETE 1
+authdb=# INSERT INTO users (username, password_hash, role)
+authdb-# VALUES (
+authdb(#   'admin',
+authdb(#   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+authdb(#   'ADMIN'
+authdb(# );
+INSERT 0 1
+authdb=# SELECT username, password_hash FROM users;
+ username |                          password_hash
+----------+------------------------------------------------------------------
+ admin    | 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
+(1 row)
+
+
+authdb=# SELECT username, password_hash FROM users WHERE username='admin';
+ username |                          password_hash
+----------+------------------------------------------------------------------
+ admin    | 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
+(1 row)
+
+
+authdb=# select * from users;
+ id | username |                          password_hash                           | role  | failed_attempts | account_locked
+----+----------+------------------------------------------------------------------+-------+-----------------+----------------
+  3 | admin    | 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9 | ADMIN |               3 | t
+(1 row)
+
+
+authdb=# delete from student;
+ERROR:  relation "student" does not exist
+LINE 1: delete from student;
+                    ^
+authdb=# delete from users;
+DELETE 1
+authdb=# INSERT INTO users (username, password_hash, role)
+authdb-# VALUES ('admin', 'admin123', 'ADMIN');
+INSERT 0 1
+authdb=# select * from users;
+ id | username | password_hash | role  | failed_attempts | account_locked
+----+----------+---------------+-------+-----------------+----------------
+  4 | admin    | admin123      | ADMIN |               0 | f
+(1 row)
+
+
+authdb=# update users set id = 1 where role = 'ADMIN';
+UPDATE 1
+authdb=# select * from users;
+ id | username | password_hash | role  | failed_attempts | account_locked
+----+----------+---------------+-------+-----------------+----------------
+  1 | admin    | admin123      | ADMIN |               0 | f
+(1 row)
+
+
+authdb=#
